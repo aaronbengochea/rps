@@ -14,7 +14,7 @@ app.get('/visit', (req, res) => {
   });
 
 app.get('/chichi', (req, res) => {
-    res.json({ message: 'Hello my cute lil kuromi baby' });
+    res.json({ message: 'TEST Hello my cute lil kuromi baby' });
     console.log("ping")
   });
 
