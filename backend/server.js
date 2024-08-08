@@ -12,9 +12,19 @@ app.get('/visit', (req, res) => {
     res.json({ message: 'Hello from the backend!' });
     console.log("ping")
   });
+
+app.get('/chichi', (req, res) => {
+    res.json({ message: 'Hello my cute lil kuromi baby' });
+    console.log("ping")
+  });
+
+app.get('/bubba', (req, res) => {
+    res.json({ message: 'Bubba stinks and smells like hay, haha he cant read this because he has a firefly phone' });
+    console.log("ping")
+  });
   
   
-  app.listen(port, () => {
+app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
   });
   
