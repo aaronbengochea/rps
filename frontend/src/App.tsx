@@ -10,7 +10,7 @@ function App() {
 
   useEffect(() => {
     // Make the GET request when the component mounts
-    axios.get('https://157.245.214.24/visit')
+    axios.get('http://157.245.214.24/visit')
       .then((response) => {
         setMessage(response.data.message); // Set the message from the response
       })
