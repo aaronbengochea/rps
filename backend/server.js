@@ -8,7 +8,7 @@ app.use(express.json())
 app.use(cors())
 
 app.get('/visit', (req, res) => {
-    res.json({ message: 'Look at that... got the frontend talking to the backend!' });
+    res.json({ message: 'TEST Look at that... got the frontend talking to the backend!' });
     console.log("ping")
   });
 
