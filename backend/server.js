@@ -1,20 +1,23 @@
 require('dotenv').config()
-const express = require('express');
-const cors = require('cors')
-const app = express();
-const port = 5000;
+const { WebSocketServer } = require('ws')
+const http = require('http')
+const uuidv4 = require('uuid').v4;
 
-app.use(express.json())
-app.use(cors())
+const server = http.createServer();
+const wsServer = new WebSocketServer({ server });
+const port = 5555;
 
-app.get('/visit', (req, res) => {
-    res.json({ message: 'TEST Look at that... got the frontend talking to the backend!' });
-    console.log("ping")
-  });
+const clients = {};
 
+server.listen(port, () => {
+  console.log(`WS server running on port ${port}`)
+})
 
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-  });
+wsServer.on('connection', function(connection) {
+  const uid = uuidv4();
+  console.log(`Received a new connection`);
 
-  
+  clients[uid] = connection;
+  console.log(`${uid} connected`);
+})
+
