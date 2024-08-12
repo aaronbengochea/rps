@@ -5,10 +5,14 @@ import {
   UncontrolledTooltip
 } from 'reactstrap';
 import useWebSocket, {ReadyState} from 'react-use-websocket';
-
 import './App.css';
 
 const WS_URL = 'ws://127.0.0.1:5555';
+
+function isUserEvent(message) {
+  let event = JSON.parse(message.data)
+  return event.type === 'userevent'
+}
 
 function WebSocketConnect() {
   const [username2, setUsername2] = useState('')
@@ -26,7 +30,7 @@ function WebSocketConnect() {
     console.log(username2)
     if(username2 && readyState === ReadyState.OPEN) {
       sendJsonMessage({
-        username2,
+        username: username2,
         type: 'userevent'
       });
     }
@@ -40,6 +44,9 @@ function WebSocketConnect() {
       <div className="container-fluid">
         <LoginSection onLogin={setUsername2}/> 
       </div>
+      <div>
+        <History/>
+      </div>
     </>
   );
 }
@@ -51,7 +58,6 @@ function LoginSection({ onLogin }) {
     filter: () => false
   });
   function logInUser() {
-    console.log(!username.trim())
     if(!username.trim()) {
       return;
     }
@@ -75,6 +81,20 @@ function LoginSection({ onLogin }) {
       </div>
     </div>
   );
+}
+
+function History() {
+  const {lastJsonMessage} = useWebSocket(WS_URL, {
+    share: true,
+    filter: isUserEvent
+  })
+  const activities = lastJsonMessage?.data.userActivity || []
+  
+  return (
+    <ul>
+      {activities.map((activity, index) => <li key={`activity-${index}`}>{activity}</li>)}
+    </ul>
+  )
 }
 
 export default WebSocketConnect;
