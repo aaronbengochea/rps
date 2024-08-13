@@ -31,6 +31,8 @@ function isUID(message) {
 
 function WebSocketConnect() {
   const [username2, setUsername2] = useState('')
+  const [inMatch, setInMatch] = useState(false)
+  const [matchID, setMatchID] = useState('')
   const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(WS_URL, {
     onOpen: () => {
       console.log('WebSocket connection established.');
@@ -39,6 +41,11 @@ function WebSocketConnect() {
     retryOnError: true,
     shouldReconnect: () => true
   });
+
+  const handlePlayAnother = () => {
+    setInMatch(false);
+    setMatchID('');
+  }
 
   useEffect(() => {
     if(username2 && readyState === ReadyState.OPEN) {
@@ -55,6 +62,12 @@ function WebSocketConnect() {
       localStorage.setItem('uid', uid)
       console.log(`${uid} stored in local storage!`)
     }
+
+    if(lastJsonMessage && lastJsonMessage.type === 'matchFound'){
+      setInMatch(true);
+      setMatchID(lastJsonMessage.data.matchID)
+
+    }
   }, [lastJsonMessage]);
 
   
@@ -65,11 +78,18 @@ function WebSocketConnect() {
         <NavbarBrand href="/">Real-time rps matchmaker</NavbarBrand>
       </Navbar>
       <div className="container-fluid">
-        {username2 ? (<MatchmakingSection/>) : (<LoginSection onLogin={setUsername2}/>)}
+        {username2 ? (
+          inMatch ? (
+          <MatchSection matchID={matchID} onPlayAnother={handlePlayAnother}/>
+        ) : (
+          <MatchmakingSection />
+          )
+        ) : ( 
+          <LoginSection onLogin={setUsername2}/>
+          )}
       </div>
       <div>
-        <RegisteredHistory/>
-        <DisconnectedHistory/>
+        
       </div>
     </>
   );
@@ -174,7 +194,7 @@ function MatchmakingSection() {
   }
 
   useEffect(() => {
-    if(lastJsonMessage && lastJsonMessage.type === 'beginMatchmaking') {
+    if(lastJsonMessage && lastJsonMessage.type === 'matchFound') {
       console.log(lastJsonMessage)
     }
   }, [lastJsonMessage]);
@@ -191,6 +211,80 @@ function MatchmakingSection() {
   );
 }
 
+function MatchSection({matchID, onPlayAnother}) {
+  const [resultData, setResultData] = useState(null);
+  const { sendJsonMessage,lastJsonMessage, readyState } = useWebSocket(WS_URL, {
+    share: true,
+    retryOnError: true,
+    shouldReconnect: () => true
+
+  } )
+  
+  function handleSelection(selection) {
+    if (readyState === ReadyState.OPEN){
+      console.log('choice made')
+      
+      const uid = localStorage.getItem('uid')
+      sendJsonMessage({
+        type: 'playerChoice',
+        uid: uid,
+        matchID: matchID,
+        choice: selection,
+      })
+    } else {
+      console.log('WebSocket connection is not currently open, please refresh home')
+    }
+    // Implement the matchmaking logic here
+  }
+
+  // Gets me the matchID for this given match and sets it
+  useEffect(() => {
+    if(lastJsonMessage && lastJsonMessage.type === 'matchResult'){
+      console.log(lastJsonMessage)
+      setResultData(lastJsonMessage.data)
+    }
+  }, [lastJsonMessage]);
+  
+  return (
+    <div className="match-section">
+      <h2>Make Your Choice</h2>
+      <button
+        type="button"
+        onClick={() => handleSelection('rock')}
+        className="btn btn-primary">
+        Rock
+      </button>
+      <button
+        type="button"
+        onClick={() => handleSelection('paper')}
+        className="btn btn-primary">
+        Paper
+      </button>
+      <button
+        type="button"
+        onClick={() => handleSelection('scissors')}
+        className="btn btn-primary">
+        Scissors
+      </button>
+
+      {resultData && (
+        <div className="match-result">
+        <h3>Match Result</h3>
+        <p><strong>Player 1 Choice:</strong> {resultData.p1Choice}</p>
+        <p><strong>Player 2 Choice:</strong> {resultData.p2Choice}</p>
+        <p><strong>You are Player:</strong> {resultData.playerKey}</p>
+        <p><strong>Result:</strong> {resultData.result}</p>
+        <button
+            type="button"
+            onClick={onPlayAnother}  // Trigger the parent's callback to reset match state
+            className="btn btn-secondary">
+            Play Another?
+          </button>
+      </div>
+      )}
+    </div>
+  );
+}
 
 
 export default WebSocketConnect;
