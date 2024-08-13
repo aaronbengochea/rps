@@ -151,7 +151,7 @@ function DisconnectedHistory() {
 
 
 function MatchmakingSection() {
-  const { sendJsonMessage, readyState } = useWebSocket(WS_URL, {
+  const { sendJsonMessage,lastJsonMessage, readyState } = useWebSocket(WS_URL, {
     share: true,
     retryOnError: true,
     shouldReconnect: () => true
@@ -172,6 +172,12 @@ function MatchmakingSection() {
     }
     // Implement the matchmaking logic here
   }
+
+  useEffect(() => {
+    if(lastJsonMessage && lastJsonMessage.type === 'beginMatchmaking') {
+      console.log(lastJsonMessage)
+    }
+  }, [lastJsonMessage]);
 
   return (
     <div className="matchmaking">

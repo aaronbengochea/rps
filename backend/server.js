@@ -11,13 +11,14 @@ const clients = {};
 
 const users = {};
 
-const matchmaking = {};
+const liveGames = {};
+
+const matchmaking = [];
 
 const registeredActivity = [];
 
 const disconnectedActivity = [];
 
-const userActivity = [];
 
 const typesDef = {
   USER_REGISTER: 'userRegister',
@@ -91,8 +92,38 @@ function handleMessage(message, uid){
     
     users[uid] = userInfo
     broadcastMessage(res)
+
   } else if(dataFromClient.type === typesDef.BEGIN_MATCHMAKING){
-    console.log(users[dataFromClient.uid])
+    if( matchmaking.length > 0) {
+      const opponentUID = matchmaking.shift();
+      const matchID = uuidv4();
+
+      const match = {
+        p1: uid,
+        p2: opponentUID,
+        matchID: matchID,
+      }
+
+      liveGames[matchID] = match
+
+      const matchRes = {
+        type: typesDef.BEGIN_MATCHMAKING,
+        data: {matchID: matchID, p1: users[uid], p2: users[opponentUID]}
+      }
+
+      clients[uid].send(JSON.stringify(matchRes))
+      clients[opponentUID].send(JSON.stringify(matchRes))
+
+      console.log(`Match started: ${users[uid].username} vs ${users[opponentUID].username} (Match ID: ${matchID})`)
+    } else {
+      matchmaking.push(uid);
+      console.log(`${users[uid].username} added to matchmaking queue`)
+      const matchRes = {
+        type: typesDef.BEGIN_MATCHMAKING,
+        message: 'user has been added to the matchmaking queue'
+      }
+      clients[uid].send(JSON.stringify(matchRes))
+    }
   }
   
 }
