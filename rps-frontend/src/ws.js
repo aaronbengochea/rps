@@ -14,27 +14,50 @@ function isUserEvent(message) {
   return event.type === 'userevent'
 }
 
+function isUserRegistered(message) {
+  let event = JSON.parse(message.data)
+  return event.type === 'userRegister'
+}
+
+function isUserDisconnected(message) {
+  let event = JSON.parse(message.data)
+  return event.type === 'userDisconnect'
+}
+
+function isUID(message) {
+  let event = JSON.parse(message.data)
+  return event.type === 'uidReturn'
+}
+
 function WebSocketConnect() {
   const [username2, setUsername2] = useState('')
-  const { sendJsonMessage, readyState } = useWebSocket(WS_URL, {
+  const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(WS_URL, {
     onOpen: () => {
       console.log('WebSocket connection established.');
     },
     share: true,
-    filter: () => false,
     retryOnError: true,
     shouldReconnect: () => true
   });
 
   useEffect(() => {
-    console.log(username2)
     if(username2 && readyState === ReadyState.OPEN) {
       sendJsonMessage({
         username: username2,
-        type: 'userevent'
+        type: 'userRegister'
       });
     }
   }, [username2, sendJsonMessage, readyState]);
+
+  useEffect(() => {
+    if(lastJsonMessage && lastJsonMessage.type === 'uidReturn') {
+      const uid = lastJsonMessage.data.uid;
+      localStorage.setItem('uid', uid)
+      console.log(`${uid} stored in local storage!`)
+    }
+  }, [lastJsonMessage]);
+
+  
 
   return (
     <>
@@ -42,10 +65,11 @@ function WebSocketConnect() {
         <NavbarBrand href="/">Real-time rps matchmaker</NavbarBrand>
       </Navbar>
       <div className="container-fluid">
-        <LoginSection onLogin={setUsername2}/> 
+        {username2 ? (<MatchmakingSection/>) : (<LoginSection onLogin={setUsername2}/>)}
       </div>
       <div>
-        <History/>
+        <RegisteredHistory/>
+        <DisconnectedHistory/>
       </div>
     </>
   );
@@ -96,5 +120,71 @@ function History() {
     </ul>
   )
 }
+
+function RegisteredHistory() {
+  const {lastJsonMessage} = useWebSocket(WS_URL, {
+    share: true,
+    filter: isUserRegistered
+  })
+  const activities = lastJsonMessage?.data.registeredActivity || []
+  
+  return (
+    <ul>
+      {activities.map((activity, index) => <li key={`activity-${index}`}>{activity}</li>)}
+    </ul>
+  )
+}
+
+function DisconnectedHistory() {
+  const {lastJsonMessage} = useWebSocket(WS_URL, {
+    share: true,
+    filter: isUserDisconnected
+  })
+  const activities = lastJsonMessage?.data.disconnectedActivity || []
+  
+  return (
+    <ul>
+      {activities.map((activity, index) => <li key={`activity-${index}`}>{activity}</li>)}
+    </ul>
+  )
+}
+
+
+function MatchmakingSection() {
+  const { sendJsonMessage, readyState } = useWebSocket(WS_URL, {
+    share: true,
+    retryOnError: true,
+    shouldReconnect: () => true
+
+  } )
+
+  function handleMatchmaking() {
+    if (readyState === ReadyState.OPEN){
+
+      console.log('matchmaking started')
+      const uid = localStorage.getItem('uid')
+      sendJsonMessage({
+        type: 'beginMatchmaking',
+        uid: uid
+      })
+    } else {
+      console.log('WebSocket connection is not currently open, please refresh home')
+    }
+    // Implement the matchmaking logic here
+  }
+
+  return (
+    <div className="matchmaking">
+      <button
+        type="button"
+        onClick={handleMatchmaking}
+        className="btn btn-success matchmaking__btn">
+        Begin Matchmaking
+      </button>
+    </div>
+  );
+}
+
+
 
 export default WebSocketConnect;
