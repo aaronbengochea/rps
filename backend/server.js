@@ -146,31 +146,47 @@ function handleMessage(message, uid){
         // Both players have made their choice
         const result = determineWinner(match.choices.p1, match.choices.p2);
 
-        const matchResultFirstEntry = {
+        let playerResult
+        let opponentResult
+
+        if (result === 'Draw') {
+          playerResult = 'Draw!';
+          opponentResult = 'Draw!';
+        } else if ((result === 'p1' && playerKey === 'p1') || 
+                   (result === 'p2' && playerKey === 'p2')) {
+          playerResult = 'Win';
+          opponentResult = 'Lose';
+        } else {
+          playerResult = 'Lose';
+          opponentResult = 'Win';
+        }
+    
+
+        const matchResultForPlayerOne = {
           type: 'matchResult',
           data: {
             matchID: matchID,
             p1Choice: match.choices.p1,
             p2Choice: match.choices.p2,
-            result: result,
+            result: playerResult,
             playerKey: playerKey
           },
         }
 
-        const matchResultSecondEntry = {
+        const matchResultForPlayerTwo = {
           type: 'matchResult',
           data: {
             matchID: matchID,
             p1Choice: match.choices.p1,
             p2Choice: match.choices.p2,
-            result: result,
-            playerKey: playerKey
+            result: opponentResult,
+            playerKey: opponentKey
           },
         };
 
         // Send result to both players
         clients[match.p1].send(JSON.stringify(playerKey === 'p1' ? matchResultForPlayerOne : matchResultForPlayerTwo));
-        clients[match.p2].send(JSON.stringify(playerKey === 'p1' ? matchResultForPlayerOne : matchResultForPlayerTwo));
+        clients[match.p2].send(JSON.stringify(playerKey === 'p1' ? matchResultForPlayerTwo : matchResultForPlayerOne));
 
         // Optionally, remove the match from liveGames or mark it as completed
         delete liveGames[matchID];
