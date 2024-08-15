@@ -2,10 +2,9 @@ require('dotenv').config()
 const { WebSocket, WebSocketServer } = require('ws')
 const http = require('http')
 const uuidv4 = require('uuid').v4;
-
 const server = http.createServer();
 const wsServer = new WebSocketServer({ server });
-const port = 5555;
+const port = 8000;
 
 const clients = {};
 
