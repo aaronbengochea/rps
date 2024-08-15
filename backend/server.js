@@ -1,10 +1,17 @@
 require('dotenv').config()
-const { WebSocket, WebSocketServer } = require('ws')
+const express = require('express')
+const cors = require('cors')
 const http = require('http')
+const { WebSocket, WebSocketServer } = require('ws')
 const uuidv4 = require('uuid').v4;
-const server = http.createServer();
+
+const app = express();
+const server = http.createServer(app);
 const wsServer = new WebSocketServer({ server });
-const port = 5555;
+const port = process.env.PORT || 5555
+
+app.use(cors())
+app.use(express.json())
 
 const clients = {};
 
@@ -28,6 +35,10 @@ const typesDef = {
   PLAYER_CHOICE: 'playerChoice',
 
 }
+
+app.get('/test', (req, res) => {
+  res.send('HTTP & Websocket Server together and live')
+})
 
 server.listen(port, () => {
   console.log(`WS server running on port ${port}`)
