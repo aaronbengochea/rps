@@ -7,11 +7,12 @@ const uuidv4 = require('uuid').v4;
 
 const app = express();
 const server = http.createServer(app);
-const wsServer = new WebSocketServer({ server });
-const port = process.env.PORT || 5555
 
 app.use(cors())
 app.use(express.json())
+
+const port = process.env.PORT || 5555
+const wsServer = new WebSocketServer({ server });
 
 const clients = {};
 
