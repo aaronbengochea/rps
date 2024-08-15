@@ -7,7 +7,10 @@ import {
 import useWebSocket, {ReadyState} from 'react-use-websocket';
 import './App.css';
 
-const WS_URL = 'ws://127.0.0.1:5555';
+
+const WS_URL = process.env.REACT_APP_IS_LOCAL === 'true'
+  ? process.env.REACT_APP_LOCAL_URL
+  : process.env.REACT_APP_PROD_URL
 
 function isUserEvent(message) {
   let event = JSON.parse(message.data)

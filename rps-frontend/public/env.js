@@ -61,6 +61,6 @@ window.env = {
   "npm_node_execpath": "/opt/homebrew/Cellar/node/21.7.3/bin/node",
   "npm_config_prefix": "/opt/homebrew",
   "COLORTERM": "truecolor",
-  "LOCAL_URL": "http://localhost:5555",
-  "PROD_URL": "https://rps-i38q.onrender.com"
+  "REACT_APP_LOCAL_URL": "http://localhost:5555",
+  "REACT_APP_PROD_URL": "https://rps-i38q.onrender.com"
 };
