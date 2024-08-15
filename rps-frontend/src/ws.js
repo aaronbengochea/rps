@@ -33,6 +33,8 @@ function WebSocketConnect() {
   const [username2, setUsername2] = useState('')
   const [inMatch, setInMatch] = useState(false)
   const [matchID, setMatchID] = useState('')
+  
+
   const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(WS_URL, {
     onOpen: () => {
       console.log('WebSocket connection established.');
@@ -66,7 +68,6 @@ function WebSocketConnect() {
     if(lastJsonMessage && lastJsonMessage.type === 'matchFound'){
       setInMatch(true);
       setMatchID(lastJsonMessage.data.matchID)
-
     }
   }, [lastJsonMessage]);
 
