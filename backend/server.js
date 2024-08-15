@@ -4,7 +4,7 @@ const http = require('http')
 const uuidv4 = require('uuid').v4;
 const server = http.createServer();
 const wsServer = new WebSocketServer({ server });
-const port = 10000;
+const port = 5555;
 
 const clients = {};
 
@@ -32,6 +32,7 @@ const typesDef = {
 server.listen(port, () => {
   console.log(`WS server running on port ${port}`)
 })
+
 
 wsServer.on('connection', function(connection) {
   const uid = uuidv4();
